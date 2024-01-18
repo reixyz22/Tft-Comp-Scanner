@@ -4,7 +4,7 @@
 
 #define NBEST 15
 
-enum traits{
+enum traits{ //these traits are assigned to a bit; admin = 0, animaSquad =1,... Doing this allows to make bitwise calculations later
 	ADMIN=1<<0,
 	AnimaSquad=1<<1,
 	Arsenal=1<<2,
@@ -34,12 +34,18 @@ enum traits{
 	Sureshot=1<<26
 };
 
-const struct{
+const struct{ //this is a constructor to setup the basic format of traits; name, tier, values
 	const char* name;
 	uint16_t tiers[4];
 	double values[4];
-}traitInfo[]={
-	{"ADMIN",{2,4,6,99},{2.0,4.0,5.8}},
+}
+
+traitInfo[]={  
+    {"ADMIN",{2,4,6,99},{2.0,4.0,5.8}}, //First part is the name of this trait = "Admin"
+    //Second part 2,4,6,99 are thresholds; you get overall team strength based on having the corresponding number of units with this trait
+    //ie you would get nothing for 0-1 Admins, a bonus for 2-3 Admins, then a larger version of this same bonus for 4-5 admins, then finally the largest version of this bonus for 6+ admins. any instance of 99 is filler
+    //Thirdly, the weighted values here 2.0,4.0,5.8 are subjective based on the trait's combat strength. These numbers are used to 'score' a possible team compoistion
+    //the rest of the traits use this same format
     {"AnimaSquad",{3,5,7,99},{2.0,3.0,4.0}},
     {"Arsenal",{1,99,99,99},{0.0}},
     {"Civilian",{1,2,3,99},{0.4,1.5,6.0}},
@@ -68,13 +74,14 @@ const struct{
     {"Sureshot",{2,4,99,99},{2.5,8.0}},
 };
 
-const struct{
+const struct{ //this constructor lays out the framework for the indiviual units you can draft
 	const char* name;
 	uint32_t cost;
 	uint32_t traits;
 
 }pool[]={
 	{"Alistar",3,OxForce|Aegis|Mascot},
+	// The unit named alistar costs 3 gold, has the Aegis trait and has the Mascot trait. Having alistar on your team would give you one instance each of Aegis and Mascot.
 	{"Annie",2,Gadgeteen|OxForce|Spellslinger},
 	{"Aphelios",5,Arsenal|OxForce|Sureshot},
 	{"Ashe",1,LaserCorps|Recon},
@@ -142,8 +149,7 @@ size_t findChamp(const char*const restrict name){//match first 3 characters
 		(name[1]&0x1F)!=(pool[i].name[1]&0x1F)||
 		(name[2]&0x1F)!=(pool[i].name[2]&0x1F)
 	){i++;}
-	return i+((name[0]&0x1F)=='T'&&(name[3]&0x1F)=='O');//haha yuck
-}
+	return i+((name[0]&0x1F)=='T'&&(name[3]&0x1F)=='O');
 
 double score(const uint64_t inv,char print){
 	double out=0.0;
